@@ -1,0 +1,3 @@
+/Users/ljr/Desktop/Gas_ADC/cmake-build-debug/CMakeFiles/Gas_ADC.elf.dir
+/Users/ljr/Desktop/Gas_ADC/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/ljr/Desktop/Gas_ADC/cmake-build-debug/CMakeFiles/rebuild_cache.dir

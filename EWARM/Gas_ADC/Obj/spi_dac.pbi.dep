@@ -1,0 +1,3 @@
+spi_dac.pbi: E:\Gas_ADC\Core\Src\spi_dac.c \
+  E:\Gas_ADC\EWARM/../Core/Inc\spi_dac.h \
+  E:\Gas_ADC\EWARM/../Core/Inc/main.h
