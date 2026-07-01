@@ -21,13 +21,22 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.1.0.0
 Dialog DLL:      TCM.DLL V1.56.4.0
  
 <h2>Project:</h2>
-D:\sjtu2026_spring\检测技术A\大作业\STM32L496_Portable_Sensor_触控屏_开发平台\STM32L496_Portable_Sensor_触控屏_开发平台\2.3 AD采样及触控通讯程序样例参考代码\Input_ADC1Channel1-3\MDK-ARM\Gas_ADC.uvprojx
+D:\sjtu2026_spring\检测技术A\大作业\Input_ADC1Channel1-3\MDK-ARM\Gas_ADC.uvprojx
 Project File Date:  06/17/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'C:\Keil_v5\ARM\ARMCOMPLIER506\Bin'
 Build target 'Gas_ADC'
-"Gas_ADC\Gas_ADC.axf" - 0 Error(s), 0 Warning(s).
+compiling main.c...
+../Core/Src/main.c(159): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const uint8_t *"
+    HAL_UART_Transmit(&huart2,g,strlen(g),100);
+../Core/Src/main.c(162): warning:  #167-D: argument of type "char *" is incompatible with parameter of type "const uint8_t *"
+    HAL_UART_Transmit(&huart2,h,strlen(h),100);
+../Core/Src/main.c: 2 warnings, 0 errors
+linking...
+Program Size: Code=17208 RO-data=556 RW-data=52 ZI-data=2764  
+FromELF: creating hex file...
+"Gas_ADC\Gas_ADC.axf" - 0 Error(s), 2 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -50,7 +59,7 @@ Package Vendor: Keil
 
    * Component: ARM::CMSIS:CORE:5.6.0
       Include file:  CMSIS/Core/Include/tz_context.h
-Build Time Elapsed:  00:00:01
+Build Time Elapsed:  00:00:02
 </pre>
 </body>
 </html>

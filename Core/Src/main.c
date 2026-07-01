@@ -38,7 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define N 1024
+#define N 32
 uint16_t cnt = 0;
 uint32_t adc_buff[3*N];
 uint32_t adc_output[3];
@@ -204,10 +204,10 @@ int main(void)
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_SET);
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_RESET);
     
-    adc_output[0] = adc_buff1[0] * 33 / 40960;
-    adc_output[1] = adc_buff1[1] * 33 / 40960;  //0-3300
+    adc_output[0] = adc_buff1[0] * 3300 / (4096 * N);
+    adc_output[1] = adc_buff1[1] * 3300 / (4096 * N);  //0-3300
     //adc_output[2] = adc_buff1[2] * 3.3 / 4096 / N;
-    adc_output[2] = adc_buff1[2] * 33 / 40960;
+    adc_output[2] = adc_buff1[2] * 3300 / (4096 * N);
     
     //printf("data2: %d\r\n",adc_output[2]);//transfer ADC1_IN3 data to PC terminal
     
@@ -219,10 +219,17 @@ int main(void)
     tmp5 = tmp2/10+0x30;  //ʮλ��
     tmp6 = tmp4+0x30;  //��λ��    
     
-    tmp7 = adc_output[2] * 50 / 1000;
-    if (tmp7 > 255)
+    if (adc_output[2] <= 1500)
     {
-      tmp7 = 255;
+      tmp7 = 0;
+    }
+    else if (adc_output[2] >= 2000)
+    {
+      tmp7 = 150;
+    }
+    else
+    {
+      tmp7 = (adc_output[2] - 1500) * 150 / 500;
     }
     sprintf(wave_cmd, "add 1,0,%d", tmp7);
 
@@ -233,22 +240,9 @@ int main(void)
     hmi_tx2_status = HAL_UART_Transmit(&huart2,(uint8_t*)wave_cmd,strlen(wave_cmd),100);
     HAL_UART_Transmit(&huart2,end,3,100);
 
-    hmi_ref_cnt++;
-    if (hmi_ref_cnt >= 20)
-    {
-      hmi_ref_cnt = 0;
-      HAL_UART_Transmit(&huart2,end,3,100);
-      HAL_UART_Transmit(&huart2,n,strlen(n),100); //ok
-      HAL_UART_Transmit(&huart2,end,3,100);
-      HAL_UART_Transmit(&huart2,end,3,100);
-      HAL_UART_Transmit(&huart2,o,strlen(o),100); //ok
-      HAL_UART_Transmit(&huart2,end,3,100);
-    }
-    
-    
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
-    HAL_Delay(10);
+    HAL_Delay(2);
     
   }
   /* USER CODE END 3 */
