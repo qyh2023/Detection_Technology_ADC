@@ -62,12 +62,21 @@ char *m="add 1,1,80";    //white line
 char *mn="add 1,1,";     //real time data
 char *o="add 1,2,107";   //red line
 char *n="add 1,3,57";    //green line
+char *hide_t_label_cmd="vis t8,0";
+char *hide_t_unit_cmd="vis t9,0";
 uint8_t end[3]={0xff,0xff,0xff};
 uint8_t data[4];
 char wave_cmd[24];
+char hr_cmd[24];
 uint8_t hmi_tx2_status;
 uint8_t hmi_tx3_status;
 uint16_t hmi_ref_cnt;
+uint32_t ecg_baseline_mv;
+uint16_t ecg_threshold_mv;
+uint32_t last_r_peak_tick;
+uint32_t last_hr_send_tick;
+uint16_t heart_rate_bpm;
+uint8_t r_peak_ready = 1;
 
 /* Buffer used for transmission */
 uint8_t aTxBuffer[32];
@@ -161,6 +170,11 @@ int main(void)
   HAL_UART_Transmit(&huart2,end,3,100);
   HAL_UART_Transmit(&huart2,h,strlen(h),100);
   HAL_UART_Transmit(&huart2,end,3,100);
+  HAL_Delay(20);
+  HAL_UART_Transmit(&huart2,hide_t_label_cmd,strlen(hide_t_label_cmd),100);
+  HAL_UART_Transmit(&huart2,end,3,100);
+  HAL_UART_Transmit(&huart2,hide_t_unit_cmd,strlen(hide_t_unit_cmd),100);
+  HAL_UART_Transmit(&huart2,end,3,100);
   
   /* USER CODE END 2 */
 
@@ -194,7 +208,7 @@ int main(void)
     adc_buff1[1] = 0;
     adc_buff1[2] = 0;
     HAL_ADC_Start_DMA(&hadc1,(uint32_t*)adc_buff,3*N);
-    for (int i = 0;i < N; ++i)  // N == 1024
+    for (int i = 0;i < N; ++i)  // N == 32
     {
       adc_buff1[0] += adc_buff[3 * i];
       adc_buff1[1] += adc_buff[3 * i + 1];
@@ -210,6 +224,35 @@ int main(void)
     adc_output[2] = adc_buff1[2] * 3300 / (4096 * N);
     
     printf("%lu,%lu\r\n", HAL_GetTick(), adc_output[2]);
+
+    if (ecg_baseline_mv == 0)
+    {
+      ecg_baseline_mv = adc_output[2];
+    }
+    else
+    {
+      ecg_baseline_mv = (ecg_baseline_mv * 31 + adc_output[2]) / 32;
+    }
+    ecg_threshold_mv = ecg_baseline_mv + 35;
+
+    uint32_t now_tick = HAL_GetTick();
+    if (r_peak_ready && adc_output[2] > ecg_threshold_mv && (now_tick - last_r_peak_tick) > 400)
+    {
+      if (last_r_peak_tick != 0)
+      {
+        uint32_t rr_ms = now_tick - last_r_peak_tick;
+        if (rr_ms >= 400 && rr_ms <= 1500)
+        {
+          heart_rate_bpm = 60000 / rr_ms;
+        }
+      }
+      last_r_peak_tick = now_tick;
+      r_peak_ready = 0;
+    }
+    else if (adc_output[2] < ecg_baseline_mv + 15)
+    {
+      r_peak_ready = 1;
+    }
     
     tmp0 = adc_output[2]%1000;
     tmp1 = adc_output[2]/1000+0x30;
@@ -239,6 +282,14 @@ int main(void)
     data[2] = tmp5;
     hmi_tx2_status = HAL_UART_Transmit(&huart2,(uint8_t*)wave_cmd,strlen(wave_cmd),100);
     HAL_UART_Transmit(&huart2,end,3,100);
+
+    if ((now_tick - last_hr_send_tick) >= 500)
+    {
+      last_hr_send_tick = now_tick;
+      sprintf(hr_cmd, "n0.val=%d", heart_rate_bpm);
+      HAL_UART_Transmit(&huart2,(uint8_t*)hr_cmd,strlen(hr_cmd),100);
+      HAL_UART_Transmit(&huart2,end,3,100);
+    }
 
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_7,GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_14,GPIO_PIN_SET);
