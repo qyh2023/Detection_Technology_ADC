@@ -209,7 +209,7 @@ int main(void)
     //adc_output[2] = adc_buff1[2] * 3.3 / 4096 / N;
     adc_output[2] = adc_buff1[2] * 3300 / (4096 * N);
     
-    //printf("data2: %d\r\n",adc_output[2]);//transfer ADC1_IN3 data to PC terminal
+    printf("%lu,%lu\r\n", HAL_GetTick(), adc_output[2]);
     
     tmp0 = adc_output[2]%1000;
     tmp1 = adc_output[2]/1000+0x30;
